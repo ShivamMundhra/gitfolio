@@ -22,6 +22,11 @@ const W2 = styled.div`
   flex-wrap: wrap;
 `;
 
+const TextWrap = styled.span`
+  margin: 30px 0 0 5px;
+  font-size: 1.5vw;
+`;
+
 const Organisations = (props) => {
   const [orgData, setOrgData] = useState(null);
   const { Url } = props;
@@ -29,9 +34,9 @@ const Organisations = (props) => {
     try {
       const { data } = await axios.get(Url);
       setOrgData(data);
-      console.log("Hi");
+      console.log(data);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }, [Url]);
   useEffect(() => {
@@ -39,11 +44,15 @@ const Organisations = (props) => {
   }, [getOrgData]);
   return (
     <Wrapper>
-      {orgData && orgData.length > 0 && (
+      {orgData && orgData.length > 0 ? (
         <W2>
           {orgData.map((org) => (
             <OrgImg key={org.id} src={org.avatar_url} />
           ))}
+        </W2>
+      ) : (
+        <W2>
+          <TextWrap>None</TextWrap>
         </W2>
       )}
     </Wrapper>

@@ -6,6 +6,7 @@ import LandingPage from "./containers/LandingPage";
 import UserDetails from "./containers/UserDetails";
 
 import { Switch, Route } from "react-router-dom";
+import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 
 function App() {
   // const saveImage = () =>

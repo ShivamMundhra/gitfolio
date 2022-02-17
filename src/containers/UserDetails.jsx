@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import GhPolyglot from "gh-polyglot";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import axios from "axios";
 import { BASE_GITHUB_URL, DARK_THEME } from "../utils/constants";
 import UserDetailBox from "../components/UserDetailBox";
@@ -10,6 +10,7 @@ import LangDetails from "../containers/LangDetails";
 import RepoChart from "../containers/RepoCharts";
 import RateLimit from "../components/RateLimit";
 import Limit from "../components/Limit";
+import { BallTriangle } from "react-loader-spinner";
 
 const WrapperDiv = styled.div`
   background: transparent;
@@ -74,14 +75,27 @@ const Wrapper3 = styled.div`
   }
 `;
 
+const SpinWarpper = styled.div`
+  height: max-content;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  /* position: relative; */
+  background-color: #2a3950;
+  justify-content: center;
+  align-items: center;
+`;
+
 const UserDetails = (props) => {
   // const [username, setUsername] = useState("");
+  const history = useHistory();
   const [userData, setUserData] = useState(null);
   const [repoData, setRepoData] = useState(null);
   const [userStats, setUserStats] = useState(null);
   const [limit, setLimit] = useState(null);
   const [remaining, setRemaining] = useState(0);
   const [resetTime, setResetTime] = useState(null);
+  const [dataFetched, setDataFetched] = useState(false);
   const params = useParams();
   const getLimit = useCallback(async () => {
     try {
@@ -99,10 +113,12 @@ const UserDetails = (props) => {
       );
       // console.log(data);
       setUserData(data);
+      setDataFetched(true);
     } catch (error) {
-      console.log(error);
+      // setDataFetched(false);
+      history.push("/", { redirected: true });
     }
-  }, [params.userId]);
+  }, [params.userId, history]);
   const getRepoDetails = useCallback(async () => {
     try {
       const { data } = await axios.get(
@@ -111,9 +127,10 @@ const UserDetails = (props) => {
       // console.log(data);
       setRepoData(data);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
+      history.push("/", { redirected: true });
     }
-  }, [params.userId]);
+  }, [params.userId, history]);
   const g = useCallback(() => {
     // console.log("hisnogh");
     const me = new GhPolyglot(`${params.userId}`);
@@ -136,25 +153,32 @@ const UserDetails = (props) => {
   return (
     <WrapperDiv>
       <Limit limit={limit} remaining={remaining} />
-      {remaining && remaining > 0 ? (
+      {dataFetched ? (
         <>
-          {userData && <UserDetailBox userData={userData} />}
-          <Scrollable>
-            <Wrapper2>
-              {userStats && (
-                <LangDetails data={userStats} repoData={repoData} />
-              )}
-              {repoData && <RepoChart repoData={repoData} />}
-            </Wrapper2>
-            <Wrapper3>
-              {repoData && <RepoDetails repoData={repoData} />}
-            </Wrapper3>
-          </Scrollable>
+          {remaining && remaining > 0 ? (
+            <>
+              {userData && <UserDetailBox userData={userData} />}
+              <Scrollable>
+                <Wrapper2>
+                  {userStats && (
+                    <LangDetails data={userStats} repoData={repoData} />
+                  )}
+                  {repoData && <RepoChart repoData={repoData} />}
+                </Wrapper2>
+                <Wrapper3>
+                  {repoData && <RepoDetails repoData={repoData} />}
+                </Wrapper3>
+              </Scrollable>
+            </>
+          ) : (
+            <RateLimit resetTime={resetTime} />
+          )}
         </>
       ) : (
-        <RateLimit resetTime={resetTime} />
+        <SpinWarpper>
+          <BallTriangle color="#00BFFF" height={80} width={80} />
+        </SpinWarpper>
       )}
-
       {/* <button onClick={g}>
         {userData ? <img src={userData.avatar_url} alt="avatar" /> : "Hert"}
       </button> */}
